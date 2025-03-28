@@ -129,4 +129,36 @@ df = pd.DataFrame({
 df.to_csv("SSs.csv", index=False)
 print("Datos guardados en 'TOMASEÑAL.csv'.")
 ```
+### Graficá de la señal CSV
+
+- Importamos la señal, creamos una ventana donde se muestre la señal.
+
+```bash
+def graficar_ventana(csv_datosemglabProcesamiento, t_inicio, duracion):
+    # Leer el archivo CSV
+    datos = pd.read_csv(csv_datosemglabProcesamiento)
+
+    # Filtrar los datos dentro de la ventana de tiempo deseada
+    t_fin = t_inicio + duracion
+    datos_ventana = datos[(datos["Tiempo (s)"] >= t_inicio) & (datos["Tiempo (s)"] < t_fin)]
+
+    # Graficar la señal en la ventana seleccionada
+    plt.figure(figsize=(12, 6))
+    plt.plot(datos_ventana["Tiempo (s)"], datos_ventana["Voltaje (V)"], 'b-', label="Señal")
+    plt.xlabel("Tiempo (s)")
+    plt.ylabel("Voltaje (V)")
+    plt.title(f"Señal entre {t_inicio} s y {t_fin} s")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+```
+- Limitamos los rangos de tiempo en los cuales vamos a leer la señal.
+
+```bash
+archivo_csv = "TOMASENAL.csv"  
+tiempo_inicio = 10  # Tiempo de inicio en segundos
+duracion = 120      # Duración en segundos a graficar
+graficar_ventana(archivo_csv, tiempo_inicio, duracion)
+```
 
