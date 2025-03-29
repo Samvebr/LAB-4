@@ -281,6 +281,8 @@ from scipy import stats
 from scipy.fftpack import fft
 ```
 - Cada una se encarga de procesar la señal y poder analizar de forma completa la señal.
+- 
+![Image](https://github.com/user-attachments/assets/904b3c31-96fd-4f06-b429-880a19896ada)
 
 - En este caso particular se hace el analisis de la ventana inicial, una ventana media y una ventana final.
 ```bash
@@ -304,6 +306,9 @@ else:
     exit()
 ```
 - Finalmente graficamos las tres señales.
+  
+![Image](https://github.com/user-attachments/assets/a3937adf-2076-4fb7-ae71-9dd478e70969)
+
 ```bash
 **fig, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
 axs[0].plot(t_primera, primera_hanning, color='blue', label='Primera Ventana Hanning')
