@@ -329,7 +329,11 @@ for ax in axs:
 plt.tight_layout()
 plt.show()
 ```
-
+## Conclusiones
+- La primera y última ventana tienen estructuras similares, mientras que la ventana del medio muestra más inestabilidad y fluctuaciones.
+-  La ventana del medio tiene mayor variabilidad en la envolvente, lo que sugiere un incremento en ruido o actividad en esa región.
+-  La señal no es estacionaria, hay cambios en la intensidad y dinámica a lo largo del tiempo.
+-  Posibles causas: inter
 
 
 
