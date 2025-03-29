@@ -133,6 +133,8 @@ print("Datos guardados en 'TOMASEÑAL.csv'.")
 ```
 ### Graficá de la señal CSV
 
+![Image](https://github.com/user-attachments/assets/a178ecb5-a800-4056-b5f6-db75d8ae5d2b)
+
 - Importamos la señal, creamos una ventana donde se muestre la señal.
 
 ```bash
@@ -165,6 +167,7 @@ graficar_ventana(archivo_csv, tiempo_inicio, duracion)
 ```
 
 ## Filtrado y tratamiento de la señal.  
+### Filtrado
 
 - Para esta sección utilizaremo la siguientes librerias.
 ```bash
@@ -190,4 +193,138 @@ from scipy.signal import butter, filtfilt
     b, a = butter(orden, normal_cutoff, btype='low', analog=False)
     senal_filtrada = filtfilt(b, a, senal)
     return senal_filtrada
+### Grafíca de la señal ya filtrada.
+
+- Creamos una función que haga esta tarea
+- Leemos el archivo CSV y grafica la señal filtrada en el intervalo [t_inicio, t_fin). Se asume que el CSV tiene dos columnas: "Tiempo (s)" y "Voltaje (V)".
+ ```bash
+
+def graficar_ventana(archivo_csv, t_inicio, t_fin, num_ventana, fs):
+    datos = pd.read_csv(archivo_csv)
+    
+    # Filtrar los datos dentro del intervalo deseado
+    mascara = (datos["Tiempo (s)"] >= t_inicio) & (datos["Tiempo (s)"] < t_fin)
+    datos_ventana = datos[mascara]
+    
+    if datos_ventana.empty:
+        print(f"No hay datos en la ventana {num_ventana} ({t_inicio} s a {t_fin} s)")
+        return
+    
+    # Extraer el vector de tiempo y la señal
+    tiempo_ventana = datos_ventana["Tiempo (s)"].values
+    senal_ventana = datos_ventana["Voltaje (V)"].values
+
+    # Aplicar filtro pasa bajos a 250 Hz
+    senal_filtrada = filtro_pasa_bajos(senal_ventana, fs, fc=250, orden=6)
+```
+- Calculamos sus datos estadisticos (Media, mediana y moda).
+
+```bash
+    media = senal_filtrada.mean()
+    mediana = np.median(senal_filtrada)
+    moda = stats.mode(senal_filtrada, keepdims=True)[0][0]
+```
+- Finalmente tomamos las ventanas por el metodo de Hanning y las definimos segun el tiempo necesitado
+```bash
+def aplicar_ventana(senal, tipo="hamming"):
+    """
+    Aplica una función de ventana a la señal.
+    - tipo="hamming" aplica una ventana de Hamming.
+    - tipo="hanning" aplica una ventana de Hanning.
+    """
+    N = len(senal)
+    if tipo == "hamming":
+        ventana = hamming(N)
+    elif tipo == "hanning":
+        ventana = hann(N)
+    else:
+        raise ValueError("Tipo de ventana no reconocido. Usa 'hamming' o 'hanning'.")
+    
+    return senal * ventana  # Multiplicación punto a punto
+
+# Definir las ventanas de tiempo según lo solicitado
+ventanas = [
+    {"inicio": 3.5,    "fin": 14},
+    {"inicio": 18,   "fin": 30},
+    {"inicio": 31,   "fin": 45},
+    {"inicio": 47.5,   "fin": 56.5},
+    {"inicio": 60,   "fin": 69},
+    {"inicio": 72,   "fin": 82},
+    {"inicio": 84,   "fin": 94},
+    {"inicio": 95,   "fin": 105},
+    {"inicio": 106.5,   "fin": 115},
+    {"inicio": 117.7,   "fin": 126},
+   
+]
+
+archivo_csv = "TOMASENAL.csv"
+fs = 5000  # Frecuencia de muestreo en Hz
+
+# Procesar y graficar cada ventana con la señal filtrada
+for idx, ventana in enumerate(ventanas, start=1):
+    graficar_ventana(archivo_csv, ventana["inicio"], ventana["fin"], idx, fs)
+```
+
+## Analisis espectral
+
+### Transformada de Fourier
+
+- Realizaremos esto en las dos ventanas que analizaremos principalmente, la primera y la ultima, así para evidenciar de la manera mas clara los cambios en al frecuencia.
+- Usaremos las siguientes librerias.
+```bash
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.signal import butter, filtfilt, hilbert
+from scipy.signal.windows import hann, hamming
+from scipy import stats
+from scipy.fftpack import fft
+```
+- Cada una se encarga de procesar la señal y poder analizar de forma completa la señal.
+
+- En este caso particular se hace el analisis de la ventana inicial, una ventana media y una ventana final.
+```bash
+# Analizar las tres ventanas usando ventana "hanning"
+tiempo_primera, envolvente_primera, senal_filtrada_primera = analizar_ventana(archivo_csv, ventanas[0]["inicio"], ventanas[0]["fin"], fs, 1, ventana_tipo="hanning")
+tiempo_segunda, envolvente_segunda, senal_filtrada_segunda = analizar_ventana(archivo_csv, ventanas[1]["inicio"], ventanas[1]["fin"], fs, 2, ventana_tipo="hanning")
+tiempo_ultima, envolvente_ultima, senal_filtrada_ultima = analizar_ventana(archivo_csv, ventanas[2]["inicio"], ventanas[2]["fin"], fs, 3, ventana_tipo="hanning")
+```
+- ajustamos sus longitudes para que la señal tenga los mismos parametros de tiempo.
+```bash
+if tiempo_primera is not None and tiempo_segunda is not None and tiempo_ultima is not None:
+    min_len = min(len(envolvente_primera), len(envolvente_segunda), len(envolvente_ultima))
+    envolvente_primera = envolvente_primera[:min_len]
+    envolvente_segunda = envolvente_segunda[:min_len]
+    envolvente_ultima = envolvente_ultima[:min_len]
+    t_primera = tiempo_primera[:min_len]
+    t_segunda = tiempo_segunda[:min_len]
+    t_ultima = tiempo_ultima[:min_len]
+else:
+    print("Error: Alguna de las ventanas no contiene datos.")
+    exit()
+```
+- Finalmente graficamos las tres señales.
+```bash
+**fig, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
+axs[0].plot(t_primera, primera_hanning, color='blue', label='Primera Ventana Hanning')
+axs[0].set_title("Primera Ventana Hanning")
+axs[0].grid(True)
+
+axs[1].plot(t_segunda, medio_hanning, color='orange', label='Ventana del Medio Hanning')
+axs[1].set_title("Ventana del Medio Hanning")
+axs[1].grid(True)
+
+axs[2].plot(t_ultima, ultima_hanning, color='red', label='Última Ventana Hanning')
+axs[2].set_title("Última Ventana Hanning")
+axs[2].grid(True)
+
+for ax in axs:
+    ax.set_xlabel("Tiempo (s)")
+    ax.set_ylabel("Amplitud (V)")
+plt.tight_layout()
+plt.show()
+```
+
+
+
 
