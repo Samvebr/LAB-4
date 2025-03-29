@@ -162,3 +162,30 @@ duracion = 120      # Duración en segundos a graficar
 graficar_ventana(archivo_csv, tiempo_inicio, duracion)
 ```
 
+## Filtrado y tratamiento de la señal.  
+
+- Para esta sección utilizaremo la siguientes librerias.
+```bash
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy import stats
+import numpy as np
+from scipy.signal import butter, filtfilt
+```
+- En estas se encuentran los filtros digitales y las funciones necesarias para procesar la señal.
+- Se usara un filtro pasa bajas para eliminar el ruido de frecuencias altas producido por el ruido electromagnetico.
+- Crearemos una función para el filtro con los siguientes parametros:
+
+ - senal: array unidimensional con la señal.
+ - fs: frecuencia de muestreo en Hz.
+ - fc: frecuencia de corte en Hz (por defecto 250 Hz).
+ - orden: orden del filtro (por defecto 4).
+   ```bash
+   def filtro_pasa_bajos(senal, fs, fc=250, orden=6):
+    
+    nyquist = 0.5 * fs
+    normal_cutoff = fc / nyquist
+    b, a = butter(orden, normal_cutoff, btype='low', analog=False)
+    senal_filtrada = filtfilt(b, a, senal)
+    return senal_filtrada
+
