@@ -329,11 +329,55 @@ for ax in axs:
 plt.tight_layout()
 plt.show()
 ```
-## Conclusiones
+Para la prueba de dos colas, primero se ajusta la longitudes de las ventanas para poder compararlas.
+
+```bash
+if tiempo_primera is not None and tiempo_segunda is not None and tiempo_ultima is not None:
+    min_len = min(len(envolvente_primera), len(envolvente_segunda), len(envolvente_ultima))
+    envolvente_primera = envolvente_primera[:min_len]
+    envolvente_segunda = envolvente_segunda[:min_len]
+    envolvente_ultima = envolvente_ultima[:min_len]
+```
+- Luego se realiza la prueba t de dos muestras independientes para comparar si las señales son significativamente diferentes.
+  ``` bash
+    t_stat_1, p_val_1 = stats.ttest_ind(envolvente_primera, envolvente_segunda, equal_var=False)
+    t_stat_2, p_val_2 = stats.ttest_ind(envolvente_primera, envolvente_ultima, equal_var=False)
+    t_stat_3, p_val_3 = stats.ttest_ind(envolvente_segunda, envolvente_ultima, equal_var=False)
+  ```
+
+Posteriormente se grafican los valores p de las pruebas t y la linea rojo es el nivel de significacia.
+```bash
+    alpha = 0.05
+    etiquetas = ["Primera vs Segunda", "Primera vs Última", "Segunda vs Última"]
+    
+    plt.figure(figsize=(8, 5))
+    plt.bar(etiquetas, [p_val_1, p_val_2, p_val_3], color=['blue', 'orange', 'red'])
+    plt.axhline(y=alpha, color='gray', linestyle='--', label='Nivel de significancia (0.05)')
+    plt.ylabel("Valor p")
+    plt.title("Prueba t de dos colas entre ventanas")
+    plt.legend()
+    plt.show()
+```
+- Y por ultimo el codigo determina si hay diferencias significativas entre las ventanas.
+
+```bash
+    print("Conclusiones:")
+    for i, p_val in enumerate([p_val_1, p_val_2, p_val_3]):
+        print(f"- {etiquetas[i]}: {'Diferencia significativa' if p_val < alpha else 'No significativa'}")
+```
+
+- Los resultados obtenidos de las comparaciones fueron:
+### Conclusiones:
+- Primera vs Segunda: Diferencia significativa
+- Primera vs Última: Diferencia significativa
+- Segunda vs Última: Diferencia significativa
+
+Estos resultados demuestras que la señal no es estacionaria, es decir, que cambia en el tiempo. Lo que indica que a mayor tiempo de actividad el musculo tiende a fatigarse.
+## Conclusiones finales
 - La primera y última ventana tienen estructuras similares, mientras que la ventana del medio muestra más inestabilidad y fluctuaciones.
 -  La ventana del medio tiene mayor variabilidad en la envolvente, lo que sugiere un incremento en ruido o actividad en esa región.
 -  La señal no es estacionaria, hay cambios en la intensidad y dinámica a lo largo del tiempo.
--  Posibles causas: inter
+-  El cambio en la intencidad y dinamica nos demuestra que el cambio en el sistema medido (Antebrazo), es significativo y se confirma un cansancia de las fibras musculares.
 
 
 
