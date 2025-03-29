@@ -29,6 +29,8 @@ una buena adherencia con gel conductor, en este caso los musculos del antebrazo 
 
 ### Creación de interfaz y conexión Python/DAQ
 
+![Image](https://github.com/user-attachments/assets/0e8d941a-364d-44c3-9562-4ea1848f67be)
+
 -Primero nos encargamos de importar las librerias necesarias para el correcto funcionamiento del codigo
 
 ```bash
